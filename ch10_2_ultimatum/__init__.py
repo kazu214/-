@@ -9,35 +9,21 @@ class C(BaseConstants):
     NAME_IN_URL = "ch10_2_ultimatum"
     PLAYERS_PER_GROUP = 2
     NUM_ROUNDS = 1
-    ENDOWMENT = 1000
+    ENDOWMENT = 600
     INSTRUCTIONS_TEMPLATE = "ch10_2_ultimatum/instructions.html"
     ADD_TIME = 180
 
     CHOICE_LIST_SENTE = [
-        [0, "あなた0ポイント、相手1000ポイント"],
-        [100, "あなた100ポイント、相手900ポイント"],
-        [200, "あなた200ポイント、相手800ポイント"],
-        [300, "あなた300ポイント、相手700ポイント"],
-        [400, "あなた400ポイント、相手600ポイント"],
-        [500, "あなた500ポイント、相手500ポイント"],
-        [600, "あなた600ポイント、相手400ポイント"],
-        [700, "あなた700ポイント、相手300ポイント"],
-        [800, "あなた800ポイント、相手200ポイント"],
-        [900, "あなた900ポイント、相手100ポイント"],
-        [1000, "あなた1000ポイント、相手0ポイント"],
+        [0, "あなた0ポイント、相手600ポイント"],
+        [200, "あなた200ポイント、相手400ポイント"],
+        [400, "あなた400ポイント、相手200ポイント"],
+        [600, "あなた600ポイント、相手0ポイント"],
     ]
 
     CHOICE_LIST_GOTE_TMP = [
-        [1000, "あなたに1000ポイント"],
-        [900, "あなた900ポイント"],
-        [800, "あなた800ポイント"],
-        [700, "あなた700ポイント"],
         [600, "あなた600ポイント"],
-        [500, "あなた500ポイント"],
         [400, "あなた400ポイント"],
-        [300, "あなた300ポイント"],
         [200, "あなた200ポイント"],
-        [100, "あなた100ポイント"],
         [0, "あなた0ポイント"],
     ]
 
@@ -158,7 +144,7 @@ def set_P1(player: Player):
             sub.err_message = "エラーあり"
     else:
         group.flg_non_input_p1 = 1
-        tmp = random.randint(0, 10)
+        tmp = random.randint(0, len(C.CHOICE_LIST_SENTE) - 1)
         group.p1_decision = str(C.CHOICE_LIST_SENTE[tmp][0])
     # 先手の配分計算
     # group.p1_amount = C.ENDOWMENT - int(group.p1_decision)
@@ -193,46 +179,18 @@ def set_pair(player: Player):
 
     sub.num_participants += 1
 
-    if p1 == "1000" and p2 == "0":
-        sub.num_1000_accept += 1
-    elif p1 == "1000" and p2 == "1":
-        sub.num_1000_reject += 1
-    elif p1 == "900" and p2 == "0":
-        sub.num_900_accept += 1
-    elif p1 == "900" and p2 == "1":
-        sub.num_900_reject += 1
-    elif p1 == "800" and p2 == "0":
-        sub.num_800_accept += 1
-    elif p1 == "800" and p2 == "1":
-        sub.num_800_reject += 1
-    elif p1 == "700" and p2 == "0":
-        sub.num_700_accept += 1
-    elif p1 == "700" and p2 == "1":
-        sub.num_700_reject += 1
-    elif p1 == "600" and p2 == "0":
+    if p1 == "600" and p2 == "0":
         sub.num_600_accept += 1
     elif p1 == "600" and p2 == "1":
         sub.num_600_reject += 1
-    elif p1 == "500" and p2 == "0":
-        sub.num_500_accept += 1
-    elif p1 == "500" and p2 == "1":
-        sub.num_500_reject += 1
     elif p1 == "400" and p2 == "0":
         sub.num_400_accept += 1
     elif p1 == "400" and p2 == "1":
         sub.num_400_reject += 1
-    elif p1 == "300" and p2 == "0":
-        sub.num_300_accept += 1
-    elif p1 == "300" and p2 == "1":
-        sub.num_300_reject += 1
     elif p1 == "200" and p2 == "0":
         sub.num_200_accept += 1
     elif p1 == "200" and p2 == "1":
         sub.num_200_reject += 1
-    elif p1 == "100" and p2 == "0":
-        sub.num_100_accept += 1
-    elif p1 == "100" and p2 == "1":
-        sub.num_100_reject += 1
     elif p1 == "0" and p2 == "0":
         sub.num_0_accept += 1
     elif p1 == "0" and p2 == "1":
@@ -280,121 +238,23 @@ def graph(subsession: Subsession):
     graph_list_accept = []
     graph_list_reject = []
 
+     # 提案額リスト（← 使ってる選択肢に合わせて）
+    amount_list = [0, 200, 400, 600]
+
+    # Reject集計
+    for amt in amount_list:
+        num_reject = getattr(sub, f"num_{amt}_reject", 0)
+        tmp = round((num_reject / sub.num_participants) * 100, 2) if num_reject > 0 else 0
+        graph_list_reject.append(tmp)
+
+    # Accept集計
+    for amt in amount_list:
+        num_accept = getattr(sub, f"num_{amt}_accept", 0)
+        tmp = round((num_accept / sub.num_participants) * 100, 2) if num_accept > 0 else 0
+        graph_list_accept.append(tmp)
+
     ch10_2_result = []
 
-    # 割合に計算(accept)
-    if sub.num_0_reject > 0:
-        tmp = round((sub.num_0_reject / sub.num_participants) * 100, 2)
-        graph_list_reject.append(tmp)
-    else:
-        graph_list_reject.append(0)
-    if sub.num_100_reject > 0:
-        tmp = round((sub.num_100_reject / sub.num_participants) * 100, 2)
-        graph_list_reject.append(tmp)
-    else:
-        graph_list_reject.append(0)
-    if sub.num_200_reject > 0:
-        tmp = round((sub.num_200_reject / sub.num_participants) * 100, 2)
-        graph_list_reject.append(tmp)
-    else:
-        graph_list_reject.append(0)
-    if sub.num_300_reject > 0:
-        tmp = round((sub.num_300_reject / sub.num_participants) * 100, 2)
-        graph_list_reject.append(tmp)
-    else:
-        graph_list_reject.append(0)
-    if sub.num_400_reject > 0:
-        tmp = round((sub.num_400_reject / sub.num_participants) * 100, 2)
-        graph_list_reject.append(tmp)
-    else:
-        graph_list_reject.append(0)
-    if sub.num_500_reject > 0:
-        tmp = round((sub.num_500_reject / sub.num_participants) * 100, 2)
-        graph_list_reject.append(tmp)
-    else:
-        graph_list_reject.append(0)
-    if sub.num_600_reject > 0:
-        tmp = round((sub.num_600_reject / sub.num_participants) * 100, 2)
-        graph_list_reject.append(tmp)
-    else:
-        graph_list_reject.append(0)
-    if sub.num_700_reject > 0:
-        tmp = round((sub.num_700_reject / sub.num_participants) * 100, 2)
-        graph_list_reject.append(tmp)
-    else:
-        graph_list_reject.append(0)
-    if sub.num_800_reject > 0:
-        tmp = round((sub.num_800_reject / sub.num_participants) * 100, 2)
-        graph_list_reject.append(tmp)
-    else:
-        graph_list_reject.append(0)
-    if sub.num_900_reject > 0:
-        tmp = round((sub.num_900_reject / sub.num_participants) * 100, 2)
-        graph_list_reject.append(tmp)
-    else:
-        graph_list_reject.append(0)
-    if sub.num_1000_reject > 0:
-        tmp = round((sub.num_1000_reject / sub.num_participants) * 100, 2)
-        graph_list_reject.append(tmp)
-    else:
-        graph_list_reject.append(0)
-
-    # accept
-    if sub.num_0_accept > 0:
-        tmp = round((sub.num_0_accept / sub.num_participants) * 100, 2)
-        graph_list_accept.append(tmp)
-    else:
-        graph_list_accept.append(0)
-    if sub.num_100_accept > 0:
-        tmp = round((sub.num_100_accept / sub.num_participants) * 100, 2)
-        graph_list_accept.append(tmp)
-    else:
-        graph_list_accept.append(0)
-    if sub.num_200_accept > 0:
-        tmp = round((sub.num_200_accept / sub.num_participants) * 100, 2)
-        graph_list_accept.append(tmp)
-    else:
-        graph_list_accept.append(0)
-    if sub.num_300_accept > 0:
-        tmp = round((sub.num_300_accept / sub.num_participants) * 100, 2)
-        graph_list_accept.append(tmp)
-    else:
-        graph_list_accept.append(0)
-    if sub.num_400_accept > 0:
-        tmp = round((sub.num_400_accept / sub.num_participants) * 100, 2)
-        graph_list_accept.append(tmp)
-    else:
-        graph_list_accept.append(0)
-    if sub.num_500_accept > 0:
-        tmp = round((sub.num_500_accept / sub.num_participants) * 100, 2)
-        graph_list_accept.append(tmp)
-    else:
-        graph_list_accept.append(0)
-    if sub.num_600_accept > 0:
-        tmp = round((sub.num_600_accept / sub.num_participants) * 100, 2)
-        graph_list_accept.append(tmp)
-    else:
-        graph_list_accept.append(0)
-    if sub.num_700_accept > 0:
-        tmp = round((sub.num_700_accept / sub.num_participants) * 100, 2)
-        graph_list_accept.append(tmp)
-    else:
-        graph_list_accept.append(0)
-    if sub.num_800_accept > 0:
-        tmp = round((sub.num_800_accept / sub.num_participants) * 100, 2)
-        graph_list_accept.append(tmp)
-    else:
-        graph_list_accept.append(0)
-    if sub.num_900_accept > 0:
-        tmp = round((sub.num_900_accept / sub.num_participants) * 100, 2)
-        graph_list_accept.append(tmp)
-    else:
-        graph_list_accept.append(0)
-    if sub.num_1000_accept > 0:
-        tmp = round((sub.num_1000_accept / sub.num_participants) * 100, 2)
-        graph_list_accept.append(tmp)
-    else:
-        graph_list_accept.append(0)
 
     print(graph_list_accept, graph_list_reject)
 
